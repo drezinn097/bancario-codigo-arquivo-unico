@@ -1,0 +1,641 @@
+/*
+========================================================
+SISTEMA DE CONTROLE BANCARIO
+Estrutura de Dados - Listas Dinamicas
+Professor: Rodney
+
+ALUNOS:
+Felipe de Ciesco Freschi
+Andre Luiz Candeias da Silva
+
+OBJETIVO:
+Protótipo funcional do sistema bancário
+com lista simplesmente encadeada.
+========================================================
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <conio.h>
+#include <string.h>
+#include <locale.h>
+
+// ======================================
+// ESTRUTURA DA CONTA BANCARIA
+// LISTA SIMPLESMENTE ENCADEADA
+// ======================================
+
+typedef struct ContaBancaria {
+
+    int codigo_conta;
+
+    char banco[50];
+    char agencia[20];
+    char numero_conta[20];
+    char tipo_conta[20];
+
+    double vl_saldo;
+    double vl_limite;
+
+    char status[15];
+
+    struct ContaBancaria *prox;
+
+} ContaBancaria;
+
+// ======================================
+// CONTROLE DA LISTA
+// ======================================
+
+typedef struct {
+
+    ContaBancaria *Primeiro;
+    ContaBancaria *Ultimo;
+
+} ListaContas;
+
+// ======================================
+// POSICIONAR CURSOR
+// ======================================
+
+void gotoxy(int x, int y) {
+
+    COORD coord;
+
+    coord.X = x;
+    coord.Y = y;
+
+    SetConsoleCursorPosition(
+        GetStdHandle(STD_OUTPUT_HANDLE),
+        coord
+    );
+}
+
+// ======================================
+// TELA PADRAO
+// ======================================
+
+void tela() {
+
+    int l, c;
+
+    system("cls");
+
+    // LINHAS VERTICAIS
+    for(l = 1; l <= 24; l++) {
+
+        gotoxy(1, l);
+        printf("|");
+
+        gotoxy(80, l);
+        printf("|");
+    }
+
+    // LINHAS HORIZONTAIS
+    for(c = 1; c <= 80; c++) {
+
+        gotoxy(c, 1);
+        printf("-");
+
+        gotoxy(c, 4);
+        printf("-");
+
+        gotoxy(c, 22);
+        printf("-");
+
+        gotoxy(c, 24);
+        printf("-");
+    }
+
+    // CANTOS
+    gotoxy(1,1); printf("+");
+    gotoxy(80,1); printf("+");
+
+    gotoxy(1,4); printf("+");
+    gotoxy(80,4); printf("+");
+
+    gotoxy(1,22); printf("+");
+    gotoxy(80,22); printf("+");
+
+    gotoxy(1,24); printf("+");
+    gotoxy(80,24); printf("+");
+
+    // CABECALHO
+    gotoxy(3,2);
+    printf("CONTROLE BANCARIO");
+
+    gotoxy(3,3);
+    printf("Aluno: Felipe De Ciesco / Andre Luiz");
+
+    gotoxy(56,2);
+    printf("Estrutura de Dados");
+
+    gotoxy(61,3);
+    printf("Prof. Rodney");
+
+    // RODAPE
+    gotoxy(3,23);
+    printf("MSG: ");
+}
+
+// ======================================
+// PESQUISAR CONTA
+// ======================================
+
+ContaBancaria* pesquisarConta(
+    ListaContas *L,
+    int codigo
+) {
+
+    ContaBancaria *aux = L->Primeiro;
+
+    while(aux != NULL) {
+
+        if(aux->codigo_conta == codigo) {
+
+            return aux;
+        }
+
+        aux = aux->prox;
+    }
+
+    return NULL;
+}
+
+// ======================================
+// TELA CADASTRO
+// ======================================
+
+void telaCadastroConta() {
+
+    gotoxy(30,5);
+    printf("CADASTRO DE CONTA");
+
+    gotoxy(20,8);
+    printf("Codigo Conta......:");
+
+    gotoxy(20,9);
+    printf("Banco.............:");
+
+    gotoxy(20,10);
+    printf("Agencia...........:");
+
+    gotoxy(20,11);
+    printf("Numero Conta......:");
+
+    gotoxy(20,12);
+    printf("Tipo Conta........:");
+
+    gotoxy(20,13);
+    printf("Saldo Inicial.....:");
+
+    gotoxy(20,14);
+    printf("Limite Conta......:");
+
+    gotoxy(20,15);
+    printf("Status Conta......:");
+}
+
+// ======================================
+// CADASTRAR CONTA
+// ======================================
+
+void cadastrarConta(ListaContas *L) {
+
+    ContaBancaria *novo;
+
+    novo =
+        (ContaBancaria*)
+        malloc(sizeof(ContaBancaria));
+
+    if(novo == NULL) {
+
+        gotoxy(10,26);
+        printf("Erro de memoria!");
+
+        getch();
+        return;
+    }
+
+    tela();
+
+    telaCadastroConta();
+
+    do {
+
+        gotoxy(45,8);
+        scanf("%d", &novo->codigo_conta);
+
+        if(
+            pesquisarConta(
+                L,
+                novo->codigo_conta
+            ) != NULL
+        ) {
+
+            gotoxy(10,26);
+            printf("Codigo ja existente!");
+
+            getch();
+
+            gotoxy(45,8);
+            printf("          ");
+
+            gotoxy(45,8);
+        }
+
+    } while(
+        pesquisarConta(
+            L,
+            novo->codigo_conta
+        ) != NULL
+    );
+
+    gotoxy(45,9);
+    fflush(stdin);
+    gets(novo->banco);
+
+    gotoxy(45,10);
+    fflush(stdin);
+    gets(novo->agencia);
+
+    gotoxy(45,11);
+    fflush(stdin);
+    gets(novo->numero_conta);
+
+    gotoxy(45,12);
+    fflush(stdin);
+    gets(novo->tipo_conta);
+
+    gotoxy(45,13);
+    scanf("%lf", &novo->vl_saldo);
+
+    gotoxy(45,14);
+    scanf("%lf", &novo->vl_limite);
+
+    gotoxy(45,15);
+    fflush(stdin);
+    gets(novo->status);
+
+    novo->prox = NULL;
+
+    // INSERIR NO FINAL
+
+    if(L->Primeiro == NULL) {
+
+        L->Primeiro = novo;
+        L->Ultimo = novo;
+
+    } else {
+
+        L->Ultimo->prox = novo;
+        L->Ultimo = novo;
+    }
+
+    gotoxy(10,26);
+    printf("Conta cadastrada com sucesso!");
+
+    getch();
+}
+
+// ======================================
+// CONSULTAR CONTAS
+// ======================================
+
+void consultarContas(ListaContas *L) {
+
+    tela();
+
+    ContaBancaria *aux = L->Primeiro;
+
+    int linha = 6;
+
+    if(aux == NULL) {
+
+        gotoxy(10,26);
+        printf("Nenhuma conta cadastrada!");
+
+        getch();
+        return;
+    }
+
+    while(aux != NULL && linha < 22) {
+
+        gotoxy(5, linha++);
+        printf("Codigo: %d",
+               aux->codigo_conta);
+
+        gotoxy(5, linha++);
+        printf("Banco: %s",
+               aux->banco);
+
+        gotoxy(5, linha++);
+        printf("Agencia: %s",
+               aux->agencia);
+
+        gotoxy(5, linha++);
+        printf("Conta: %s",
+               aux->numero_conta);
+
+        gotoxy(5, linha++);
+        printf("Tipo: %s",
+               aux->tipo_conta);
+
+        gotoxy(5, linha++);
+        printf("Saldo: %.2lf",
+               aux->vl_saldo);
+
+        gotoxy(5, linha++);
+        printf("Limite: %.2lf",
+               aux->vl_limite);
+
+        gotoxy(5, linha++);
+        printf("Status: %s",
+               aux->status);
+
+        linha++;
+
+        aux = aux->prox;
+    }
+
+    gotoxy(10,26);
+    printf("Consulta finalizada!");
+
+    getch();
+}
+
+// ======================================
+// ALTERAR CONTA
+// ======================================
+
+void alterarConta(ListaContas *L) {
+
+    int codigo;
+
+    tela();
+
+    gotoxy(20,8);
+    printf("Digite o codigo da conta:");
+
+    gotoxy(50,8);
+    scanf("%d", &codigo);
+
+    ContaBancaria *conta =
+        pesquisarConta(L, codigo);
+
+    if(conta == NULL) {
+
+        gotoxy(10,26);
+        printf("Conta nao encontrada!");
+
+        getch();
+        return;
+    }
+
+    gotoxy(20,10);
+    printf("Novo Banco:");
+
+    gotoxy(40,10);
+    fflush(stdin);
+    gets(conta->banco);
+
+    gotoxy(20,11);
+    printf("Nova Agencia:");
+
+    gotoxy(40,11);
+    fflush(stdin);
+    gets(conta->agencia);
+
+    gotoxy(20,12);
+    printf("Novo Tipo:");
+
+    gotoxy(40,12);
+    fflush(stdin);
+    gets(conta->tipo_conta);
+
+    gotoxy(20,13);
+    printf("Novo Limite:");
+
+    gotoxy(40,13);
+    scanf("%lf", &conta->vl_limite);
+
+    gotoxy(20,14);
+    printf("Novo Status:");
+
+    gotoxy(40,14);
+    fflush(stdin);
+    gets(conta->status);
+
+    gotoxy(10,26);
+    printf("Conta alterada com sucesso!");
+
+    getch();
+}
+
+// ======================================
+// EXCLUIR CONTA
+// ======================================
+
+void excluirConta(ListaContas *L) {
+
+    int codigo;
+
+    tela();
+
+    gotoxy(20,8);
+    printf("Digite o codigo da conta:");
+
+    gotoxy(50,8);
+    scanf("%d", &codigo);
+
+    ContaBancaria *aux = L->Primeiro;
+    ContaBancaria *anterior = NULL;
+
+    while(
+        aux != NULL &&
+        aux->codigo_conta != codigo
+    ) {
+
+        anterior = aux;
+        aux = aux->prox;
+    }
+
+    if(aux == NULL) {
+
+        gotoxy(10,26);
+        printf("Conta nao encontrada!");
+
+        getch();
+        return;
+    }
+
+    if(anterior == NULL) {
+
+        L->Primeiro = aux->prox;
+
+    } else {
+
+        anterior->prox = aux->prox;
+    }
+
+    if(aux == L->Ultimo) {
+
+        L->Ultimo = anterior;
+    }
+
+    free(aux);
+
+    gotoxy(10,26);
+    printf("Conta excluida com sucesso!");
+
+    getch();
+}
+
+// ======================================
+// MENU CONTAS
+// ======================================
+
+void menuContas(ListaContas *L) {
+
+    int op;
+
+    do {
+
+        tela();
+
+        gotoxy(35,6);
+        printf("MENU CONTAS");
+
+        gotoxy(30,9);
+        printf("1 - Cadastrar Conta");
+
+        gotoxy(30,11);
+        printf("2 - Consultar Contas");
+
+        gotoxy(30,13);
+        printf("3 - Alterar Conta");
+
+        gotoxy(30,15);
+        printf("4 - Excluir Conta");
+
+        gotoxy(30,17);
+        printf("5 - Voltar");
+
+        gotoxy(10,26);
+        printf("Digite sua opcao: ");
+
+        scanf("%d", &op);
+
+        switch(op) {
+
+            case 1:
+                cadastrarConta(L);
+                break;
+
+            case 2:
+                consultarContas(L);
+                break;
+
+            case 3:
+                alterarConta(L);
+                break;
+
+            case 4:
+                excluirConta(L);
+                break;
+
+            case 5:
+                break;
+
+            default:
+
+                gotoxy(10,26);
+                printf("Opcao invalida!");
+
+                getch();
+        }
+
+    } while(op != 5);
+}
+
+// ======================================
+// MAIN
+// ======================================
+
+int main() {
+
+    setlocale(LC_ALL, "Portuguese");
+
+    ListaContas contas;
+
+    contas.Primeiro = NULL;
+    contas.Ultimo = NULL;
+
+    int op;
+
+    do {
+
+        tela();
+
+        gotoxy(35,7);
+        printf("MENU PRINCIPAL");
+
+        gotoxy(30,10);
+        printf("1 - Cadastro de Contas");
+
+        gotoxy(30,12);
+        printf("2 - Movimentacoes");
+
+        gotoxy(30,14);
+        printf("3 - Relatorios");
+
+        gotoxy(30,16);
+        printf("4 - Sair");
+
+        gotoxy(10,26);
+        printf("Digite sua opcao: ");
+
+        scanf("%d", &op);
+
+        switch(op) {
+
+            case 1:
+                menuContas(&contas);
+                break;
+
+            case 2:
+
+                gotoxy(10,26);
+                printf("Modulo em construcao!");
+
+                getch();
+                break;
+
+            case 3:
+
+                gotoxy(10,26);
+                printf("Modulo em construcao!");
+
+                getch();
+                break;
+
+            case 4:
+
+                gotoxy(10,26);
+                printf("Encerrando sistema...");
+
+                break;
+
+            default:
+
+                gotoxy(10,26);
+                printf("Opcao invalida!");
+
+                getch();
+        }
+
+    } while(op != 4);
+
+    return 0;
+}
